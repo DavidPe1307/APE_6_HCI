@@ -1,8 +1,10 @@
 # Método 3 · Resultados de las pruebas con usuarios (P01–P05)
 
-Generado con `consolidar.mjs` (24/11/2026, 6:10:28 p. m.). Datos crudos: `datos-sesiones.csv`, `sus.csv`, `citas.csv`.
+Generado con `consolidar.mjs` (24/11/2026, 6:22:06 p. m.). Datos crudos: `datos-sesiones.csv`, `sus.csv`, `citas.csv`.
 
 Participantes con datos: **5** · Los datos del piloto P00 no se incluyen.
+
+**Versión probada:** TutoUTA **v1** (Figma, modo Presentación), con las tarjetas congeladas tras el piloto (T5 ajustada). La v2 HTML no se probó con usuarios.
 
 ## Resultados por tarea
 | Tarea | Éxito (É + 0,5·P) | É / P / F / A | Mediana tiempo (s) | Rango (s) | Meta (s) | Ayudas | Deslices / Equivocaciones | SEQ medio |
@@ -41,5 +43,8 @@ Participantes con datos: **5** · Los datos del piloto P00 no se incluyen.
 |---|---|---|---|---|
 
 ## Notas por sesión
+
+## Limitaciones del registro
+No se registraron: **tiempos por tarea (no se cronometraron); deslices y equivocaciones; cuestionario SUS; citas textuales del pensar en voz alta**. Esas métricas se reportan como «—» y las metas que dependen de ellas quedan sin verificar («Parcial»); no se estimaron ni se completaron con supuestos.
 
 > Muestra formativa (n = 5): los resultados indican problemas, no prueban que la app funcione. Se reportan tal cual, aunque no cumplan la meta.
