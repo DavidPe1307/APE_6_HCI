@@ -19,7 +19,7 @@ const ok = b => (b == null ? '—' : b ? '✅ Cumple' : '❌ No cumple');
 
 const METAS = { T1: 90, T2: 30, T3: 60, T4: 45, T5: 60 };
 const datos = read('datos-sesiones.csv').filter(r => r.resultado);
-const sus = read('sus.csv').filter(r => r.i1);
+const sus = read('sus.csv').filter(r => r.i1 && r.i10);
 const citas = fs.existsSync(path.join(dir, 'citas.csv')) ? read('citas.csv').filter(r => r.cita_textual) : [];
 if (!datos.length) { console.error('datos-sesiones.csv no tiene resultados todavía.'); process.exit(1); }
 
@@ -29,12 +29,12 @@ for (const t of Object.keys(METAS)) {
   const c = k => rs.filter(r => r.resultado.toUpperCase().replace('É', 'E') === k).length;
   const E = c('E'), P = c('P'), F = c('F'), A = c('A');
   const tiempos = rs.map(r => num(r.tiempo_s)).filter(v => v != null);
-  const errores = rs.map(r => (num(r.deslices) ?? 0) + (num(r.equivocaciones) ?? 0));
+  const errores = rs.filter(r => r.deslices !== '' || r.equivocaciones !== '').map(r => (num(r.deslices) ?? 0) + (num(r.equivocaciones) ?? 0));
   const seq = rs.map(r => num(r.seq)).filter(v => v != null);
   const ayudas = rs.reduce((s, r) => s + (num(r.ayudas) ?? 0), 0);
   const tasa = n ? (E + 0.5 * P) / n : null;
   porTarea[t] = { n, E, P, F, A, tasa, med: median(tiempos), min: tiempos.length ? Math.min(...tiempos) : null, max: tiempos.length ? Math.max(...tiempos) : null,
-    ayudas, desl: rs.reduce((s, r) => s + (num(r.deslices) ?? 0), 0), equiv: rs.reduce((s, r) => s + (num(r.equivocaciones) ?? 0), 0),
+    ayudas, desl: errores.length ? rs.reduce((s, r) => s + (num(r.deslices) ?? 0), 0) : null, equiv: errores.length ? rs.reduce((s, r) => s + (num(r.equivocaciones) ?? 0), 0) : null,
     errMed: median(errores), seq: mean(seq), seqMed: median(seq) };
 }
 const susRows = sus.map(r => {
@@ -42,7 +42,7 @@ const susRows = sus.map(r => {
   const score = v.reduce((s, x, i) => s + (i % 2 === 0 ? x - 1 : 5 - x), 0) * 2.5;
   return { p: r.participante, v, score };
 });
-const susMean = mean(susRows.map(r => r.score));
+const susMean = susRows.length ? mean(susRows.map(r => r.score)) : null;
 
 let md = '# Método 3 · Resultados de las pruebas con usuarios (P01–P05)\n\n';
 md += `Generado con \`consolidar.mjs\` (${new Date().toLocaleString("es-EC")}). Datos crudos: \`datos-sesiones.csv\`, \`sus.csv\`, \`citas.csv\`.\n\n`;
@@ -50,7 +50,7 @@ md += `Participantes con datos: **${new Set(datos.map(r => r.participante)).size
 md += '## Resultados por tarea\n| Tarea | Éxito (É + 0,5·P) | É / P / F / A | Mediana tiempo (s) | Rango (s) | Meta (s) | Ayudas | Deslices / Equivocaciones | SEQ medio |\n|---|---|---|---|---|---|---|---|---|\n';
 for (const [t, r] of Object.entries(porTarea)) {
   const exitos = r.E + 0.5 * r.P;
-  md += `| ${t} | ${f1(exitos)} de ${r.n} (${pct(r.tasa)}) | ${r.E} / ${r.P} / ${r.F} / ${r.A} | ${f1(r.med)} | ${f1(r.min)}–${f1(r.max)} | ≤ ${METAS[t]} | ${r.ayudas} | ${r.desl} / ${r.equiv} | ${f1(r.seq)} |\n`;
+  md += `| ${t} | ${f1(exitos)} de ${r.n} (${pct(r.tasa)}) | ${r.E} / ${r.P} / ${r.F} / ${r.A} | ${f1(r.med)} | ${r.min == null ? "—" : `${f1(r.min)}–${f1(r.max)}`} | ≤ ${METAS[t]} | ${r.ayudas} | ${r.desl ?? '—'} / ${r.equiv ?? '—'} | ${f1(r.seq)} |\n`;
 }
 md += '\n## Cumplimiento de metas (hipótesis del plan)\n| Tarea | Éxito ≥ 80 % | Tiempo ≤ meta (mediana) | 0 ayudas | ≤ 1 error (mediana) | SEQ ≥ 5,5 |\n|---|---|---|---|---|---|\n';
 for (const [t, r] of Object.entries(porTarea)) {
@@ -58,21 +58,28 @@ for (const [t, r] of Object.entries(porTarea)) {
 }
 md += '\n## SUS (10 ítems)\n| Participante | Respuestas (1–5) | Puntaje |\n|---|---|---|\n';
 susRows.forEach(r => { md += `| ${r.p} | ${r.v.join(' · ')} | ${f1(r.score)} |\n`; });
-md += `\n**SUS medio: ${f1(susMean)} / 100** (meta ≥ 68) → ${ok(susMean == null ? null : susMean >= 68)} · Rango: ${f1(Math.min(...susRows.map(r => r.score)))}–${f1(Math.max(...susRows.map(r => r.score)))}\n`;
+md += susRows.length ? `\n**SUS medio: ${f1(susMean)} / 100** (meta ≥ 68) → ${ok(susMean >= 68)} · Rango: ${f1(Math.min(...susRows.map(r => r.score)))}–${f1(Math.max(...susRows.map(r => r.score)))}\n` : '\n**SUS: no aplicado / no registrado.** No se puede comparar con la meta ≥ 68.\n';
 
 const T = porTarea;
-const pi = (cond) => (cond ? 'Sí' : 'No');
+// Tres estados: Sí / No / Parcial (cuando falta algún dato no se afirma que la meta se cumple)
+const tri = conds => conds.some(c => c === false) ? 'No' : conds.some(c => c == null) ? 'Parcial (faltan datos)' : 'Sí';
+const ge = (v, m) => (v == null ? null : v >= m), le = (v, m) => (v == null ? null : v <= m);
 md += '\n## Respuesta a las preguntas de investigación\n| PI | Pregunta | Respuesta con datos |\n|---|---|---|\n';
-md += `| PI1 | ¿T1 y T2 con éxito ≥ 80 %, en tiempo meta y sin ayudas? | **${pi(T.T1.tasa >= 0.8 && T.T2.tasa >= 0.8 && T.T1.med <= 90 && T.T2.med <= 30 && T.T1.ayudas + T.T2.ayudas === 0)}** · T1 ${pct(T.T1.tasa)}, mediana ${f1(T.T1.med)} s, ${T.T1.ayudas} ayudas · T2 ${pct(T.T2.tasa)}, mediana ${f1(T.T2.med)} s, ${T.T2.ayudas} ayudas |\n`;
-md += `| PI2 | ¿T3 con ≤ 1 error y éxito ≥ 80 %? | **${pi(T.T3.tasa >= 0.8 && T.T3.errMed <= 1)}** · T3 ${pct(T.T3.tasa)}, mediana de errores ${f1(T.T3.errMed)}, SEQ ${f1(T.T3.seq)} |\n`;
-md += `| PI3 | ¿T4 y T5 sin ayuda y con éxito ≥ 80 %? | **${pi(T.T4.tasa >= 0.8 && T.T5.tasa >= 0.8 && T.T4.ayudas + T.T5.ayudas === 0)}** · T4 ${pct(T.T4.tasa)} (${T.T4.ayudas} ayudas) · T5 ${pct(T.T5.tasa)} (${T.T5.ayudas} ayudas) |\n`;
-const seqOk = Object.values(T).every(r => r.seq >= 5.5);
-md += `| PI4 | ¿SEQ ≥ 5,5 por tarea y SUS ≥ 68? (WCAG: ver accesibilidad) | **${pi(seqOk && susMean >= 68)}** · SEQ por tarea: ${Object.entries(T).map(([t, r]) => `${t} ${f1(r.seq)}`).join(', ')} · SUS ${f1(susMean)} |\n`;
+md += `| PI1 | ¿T1 y T2 con éxito ≥ 80 %, en tiempo meta y sin ayudas? | **${tri([ge(T.T1.tasa, 0.8), ge(T.T2.tasa, 0.8), le(T.T1.med, 90), le(T.T2.med, 30), T.T1.ayudas + T.T2.ayudas === 0])}** · T1 ${pct(T.T1.tasa)}, mediana ${f1(T.T1.med)} s, ${T.T1.ayudas} ayudas · T2 ${pct(T.T2.tasa)}, mediana ${f1(T.T2.med)} s, ${T.T2.ayudas} ayudas |\n`;
+md += `| PI2 | ¿T3 con ≤ 1 error y éxito ≥ 80 %? | **${tri([ge(T.T3.tasa, 0.8), le(T.T3.errMed, 1)])}** · T3 ${pct(T.T3.tasa)}, mediana de errores ${f1(T.T3.errMed)}, SEQ ${f1(T.T3.seq)} |\n`;
+md += `| PI3 | ¿T4 y T5 sin ayuda y con éxito ≥ 80 %? | **${tri([ge(T.T4.tasa, 0.8), ge(T.T5.tasa, 0.8), T.T4.ayudas + T.T5.ayudas === 0])}** · T4 ${pct(T.T4.tasa)} (${T.T4.ayudas} ayudas) · T5 ${pct(T.T5.tasa)} (${T.T5.ayudas} ayudas) |\n`;
+md += `| PI4 | ¿SEQ ≥ 5,5 por tarea y SUS ≥ 68? (WCAG: ver accesibilidad) | **${tri([...Object.values(T).map(r => ge(r.seq, 5.5)), ge(susMean, 68)])}** · SEQ por tarea: ${Object.entries(T).map(([t, r]) => `${t} ${f1(r.seq)}`).join(', ')} · SUS ${susMean == null ? 'no registrado' : f1(susMean)} |\n`;
 
 md += '\n## Citas textuales (pensar en voz alta)\n| Participante | Tarea | Cita | Gesto / emoción | Problema asociado |\n|---|---|---|---|---|\n';
 citas.forEach(c => { md += `| ${c.participante} | ${c.tarea} | «${c.cita_textual}» | ${c.gesto_emocion} | ${c.problema_asociado} |\n`; });
 md += '\n## Notas por sesión\n';
 datos.filter(r => r.notas).forEach(r => { md += `- **${r.participante} · ${r.tarea}:** ${r.notas}\n`; });
+const faltan = [];
+if (!datos.some(r => r.tiempo_s)) faltan.push('tiempos por tarea (no se cronometraron)');
+if (!datos.some(r => r.deslices !== '' || r.equivocaciones !== '')) faltan.push('deslices y equivocaciones');
+if (!susRows.length) faltan.push('cuestionario SUS');
+if (!citas.length) faltan.push('citas textuales del pensar en voz alta');
+if (faltan.length) md += `\n## Limitaciones del registro\nNo se registraron: **${faltan.join('; ')}**. Esas métricas se reportan como «—» y las metas que dependen de ellas quedan sin verificar («Parcial»); no se estimaron ni se completaron con supuestos.\n`;
 md += '\n> Muestra formativa (n = 5): los resultados indican problemas, no prueban que la app funcione. Se reportan tal cual, aunque no cumplan la meta.\n';
 fs.writeFileSync(path.join(dir, '02-resultados-usuarios.md'), md);
 console.log(md);
