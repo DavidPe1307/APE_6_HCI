@@ -147,7 +147,7 @@ const P = {
   buscar() {
     const calc = S.materia === 'Cálculo';
     let h = cab('Nueva tutoría', true) + `<div class="chips" role="tablist" aria-label="Materia">
-      ${['Cálculo', 'Física', 'Programación'].map(m => `<button role="tab" aria-selected="${S.materia === m}" data-a="materia" data-v="${m}">${m}</button>`).join('')}</div>`;
+      ${['Cálculo', 'Física', 'Programación'].map(m => `<button role="tab" aria-selected="${S.materia === m}" data-a="materia" data-v="${m}">${m}${m === 'Cálculo' ? '' : ' · Próximamente'}</button>`).join('')}</div>`;
     if (!calc) {
       return h + `<div class="tarjeta"><p class="fecha">${S.materia}</p><p class="sub">Sin plazas en esta demo. El recorrido de prueba está limitado a Cálculo.</p></div>
         <button class="primario" data-a="materia" data-v="Cálculo">Ver horarios de Cálculo</button>`;

@@ -1,6 +1,6 @@
 # Verificación automática · TutoUTA v2 (issue #17)
 
-- Fecha: 24/11/2026, 5:51:09 p. m. · Viewport 390 × 844 · Navegador: Chromium (Playwright)
+- Fecha: 24/11/2026, 6:37:44 p. m. · Viewport 390 × 844 · Navegador: Chromium (Playwright)
 - **Recorrido T1–T5 solo con teclado:** 19 de 19 pasos correctos
 - **Foco visible (contorno ≥ 2 px) en el elemento enfocado:** 19 de 19 pasos
 - **axe-core (WCAG 2.2 A/AA):** 0 reglas incumplidas en 19 pantallas revisadas
