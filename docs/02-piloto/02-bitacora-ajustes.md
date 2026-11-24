@@ -1,6 +1,6 @@
 # Bitácora de ajustes tras el piloto P00
 
-**Participante:** P00  **Fecha:** 24/11/2026  **Duración real:** 22 min  **Facilitador / observador / cronometrista:** David Pérez (Facilitador) / Compañero 1 (Observador) / Compañero 2 (Cronometrista)
+**Participante:** P00  **Fecha:** 24/11/2026  **Duración real:** 22 min  **Facilitador / observador / cronometrista:** David Pérez (Facilitador) / Sheyla Pacha (Observador) / Martin Palacios (Cronometrista)
 
 ## Puntos a verificar en la sesión (hipótesis previas, NO son resultados)
 - [x] T1: ¿«esta semana» coincide con fechas disponibles en el prototipo?
