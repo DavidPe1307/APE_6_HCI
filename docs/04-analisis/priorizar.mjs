@@ -41,6 +41,6 @@ md += '\n## Resumen MoSCoW y responsables en la v2\n| MoSCoW | Ítems | Responsa
 const resp = { Must: 'Zzzheyla (v2 Must)', Should: 'killer13233 (#17)', Could: 'Si queda tiempo', "Won't": 'Fuera de la v2 (se documenta)' };
 for (const m of ['Must', 'Should', 'Could', "Won't"]) md += `| ${m} | ${rows.filter(r => r.moscow === m).map(r => `${r.id} (${r.hallazgo})`).join(', ') || '—'} | ${resp[m]} |\n`;
 
-md += '\n> **Limitación:** la confianza se calculó con M1, M2 y M4. Cuando lleguen los datos de P01–P05 (M3), se actualiza la columna *metodos* de `backlog.csv` y se vuelve a correr el script: si M3 confirma H1, H2 o H3, su confianza sube a 1,0 y puede cambiar el MoSCoW.\n';
+md += '\n> **Limitación:** la confianza sigue la matriz final (M1, M2, M3 y M4). M3 (P01–P05) no confirmó H1–H3: las 5 tareas se completaron 5 de 5 sin ayuda, así que su confianza se mantiene en 0,8. Las metas de tiempo y el SUS no se registraron.\n';
 fs.writeFileSync(path.join(dir, 'backlog.md'), md);
 console.log(md);
