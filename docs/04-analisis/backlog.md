@@ -1,6 +1,6 @@
 # Backlog B1–Bn priorizado (MoSCoW) · TutoUTA v1 → v2
 
-Generado con `priorizar.mjs` (24/11/2026, 6:36:00 p. m.) desde `backlog.csv`. Fuente de los hallazgos: `matriz-hallazgos.md` (H1–H8) y `docs/03-evaluacion/accesibilidad/01-auditoria-wcag.md` (H9 = A1 + A2).
+Generado con `priorizar.mjs` (24/11/2026, 6:36:00 p. m.) desde `backlog.csv`. Fuente de los hallazgos: `matriz-hallazgos.md` (H1–H9) y `docs/03-evaluacion/accesibilidad/01-auditoria-wcag.md` (H9 = A1 + A2).
 
 **Fórmula:** Prioridad = (Severidad × Confianza) ÷ Esfuerzo · **Esfuerzo:** S = 1, M = 2, L = 3 (estimación del equipo) · **Confianza:** 3+ métodos = 1,0 · 2 = 0,8 · 1 = 0,5
 
