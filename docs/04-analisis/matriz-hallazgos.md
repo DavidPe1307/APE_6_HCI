@@ -1,7 +1,7 @@
 # Matriz de hallazgos H1–Hn y triangulación de confianza
 
-> **Estado: BORRADOR con M1 (heurística) y M2 (recorrido cognitivo).** Interacciones verificadas en modo presentación el 24/11/2026; el posible hallazgo de «Horario actualizado» con la hora anterior se descartó.
-> Falta agregar M3 (pruebas con usuarios P01–P05) y M4 (accesibilidad WCAG 2.2 AA), a cargo de killer13233. Cuando lleguen esos datos se actualizan las columnas *Métodos*, *Confianza* y *Severidad*, y se agregan los hallazgos nuevos.
+> **Estado: BORRADOR con M1 (heurística), M2 (recorrido cognitivo) y M4 (auditoría WCAG 2.2 AA de la v1).** Interacciones verificadas en modo presentación el 24/11/2026; el posible hallazgo de «Horario actualizado» con la hora anterior se descartó.
+> Falta agregar M3 (pruebas con usuarios P01–P05). Cuando lleguen esos datos se actualizan las columnas *Métodos*, *Confianza* y *Severidad*, y se agregan los hallazgos nuevos.
 
 **Confianza (triangulación):** 3 o más métodos = **Alta (1,0)** · 2 métodos = **Confirmado (0,8)** · 1 método = **A verificar (0,5)**.
 **Severidad:** 1 cosmético · 2 menor · 3 mayor · 4 catástrofe.
@@ -16,12 +16,13 @@
 | H5 | «Reiniciar demo» borra la reserva y los recordatorios sin confirmación (verificado: reinicia de inmediato), a la vista del participante | [16](../../evidencias/heuristica/16_ajustes_reiniciar_demo.png) | #5 · #3 | M1 (HE5) | 2 | A verificar (0,5) | Pedir confirmación o mover el control a una zona solo para el equipo evaluador |
 | H6 | El botón «Cancelar» del detalle es ambiguo (suele significar «cerrar») | [09](../../evidencias/heuristica/09_detalle_tutoria.png) · [14](../../evidencias/heuristica/14_confirmar_cancelacion.png) | #4 · #2 | M1 (HE7) | 1 | A verificar (0,5) | Cambiar la etiqueta a «Cancelar tutoría» |
 | H7 | La barra inferior se ve igual que los botones de acción y no tiene íconos | [01](../../evidencias/heuristica/01_inicio_sin_reserva.png) · [06](../../evidencias/heuristica/06_reserva_confirmada.png) | #4 | M1 (HE8) | 1 | A verificar (0,5) | Barra de pestañas estándar con ícono + texto e indicador de pestaña activa |
-| H8 | Las pestañas Física y Programación se muestran sin horarios disponibles | [03](../../evidencias/heuristica/03_buscar_fisica_sin_plazas.png) | #8 | M1 (HE9) | 1 | A verificar (0,5) | Ocultar las materias sin horarios o marcarlas como «Próximamente» antes de entrar |
+| H8 | Las pestañas Física y Programación se muestran sin horarios disponibles y el flujo no se puede completar con ellas | [03](../../evidencias/heuristica/03_buscar_fisica_sin_plazas.png) · auditoría WCAG, «Observación para la evaluación heurística» | #8 | M1 (HE9) · M4 (observación de la auditoría) | 1 | Confirmado (0,8) | Ocultar las materias sin horarios o marcarlas como «Próximamente» antes de entrar |
+| H9 | La v1 no permite navegar con teclado ni comprobar un foco visible; los horarios tienen estado «seleccionado» pero no un estado de foco distinto | [Auditoría WCAG, secciones 3 y 6 (A1, A2)](../03-evaluacion/accesibilidad/01-auditoria-wcag.md) | WCAG 2.1.1 · 2.4.7 | M4 (A1 + A2) | 2 | A verificar (0,5) | Implementar en la v2 navegación con Tab, Enter y Esc, y foco visible de al menos 2 px (backlog B9) |
 
 ## Pendiente para cerrar el Issue #12
 
 - [ ] Agregar los hallazgos de M3 con su cita o métrica (por ejemplo, «2 de 5 (40 %) no encontraron el recordatorio en T5»).
-- [ ] Agregar los hallazgos de M4 (contraste, tamaño de objetivos, teclado y reporte automático).
+- [x] Agregar los hallazgos de M4: H9 (A1 + A2). La auditoría no encontró fallas de contraste (peor caso 5,59:1) ni de tamaño de objetivos (0 de 1.129 bajo 24 px), y su observación sobre Física y Programación confirma H8.
 - [ ] Unir duplicados y recalcular la confianza: si M3 confirma H1, H2 o H3, sube a **Alta (1,0)**.
 - [ ] Revisar las severidades por consenso del equipo con los datos medidos.
 - [ ] Pasar la matriz final a killer13233 para el backlog (Prioridad = Sev × Conf ÷ Esfuerzo).
