@@ -11,7 +11,7 @@
 | T2 | «Comprueba qué día y a qué hora quedó tu tutoría.» | Dice correctamente fecha y hora | ≤ 30 s | O1 · visibilidad del estado |
 | T3 | «Te das cuenta de que a esa hora tienes clase. Haz que tu tutoría sea en la tarde.» | La reserva muestra un horario de tarde | ≤ 60 s | O2 · corrección de error |
 | T4 | «Ya no podrás asistir a esa tutoría. Haz que deje de estar agendada.» | La reserva ya no aparece como activa | ≤ 45 s | O3 · control y libertad |
-| T5 | «Quieres que la app te avise antes de una tutoría. Configúralo.» | Queda activo un recordatorio | ≤ 60 s | O3 · personalización |
+| T5 | «Quieres recibir avisos antes de tus tutorías. Ajusta las notificaciones de la app como prefieras.» | Queda activo un recordatorio | ≤ 60 s | O3 · personalización |
 
 ## Reglas verificadas
 - [x] Una sola meta observable por tarea, con criterio de éxito.
