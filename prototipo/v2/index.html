@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TutoUTA v2 · Prototipo navegable</title>
+<meta name="description" content="TutoUTA v2: prototipo para agendar tutorías (rol estudiante). APE 6 IHC, UTA.">
+<style>
+  :root {
+    --azul: #1F4E9C; --azul-osc: #142B4B; --azul-claro: #EAF1FC; --fondo: #F6F9FD;
+    --gris: #4B5C72; --borde: #C9D4E3; --rojo: #A32232; --rojo-claro: #FFF1F2;
+    --verde: #176044; --verde-claro: #EAF5EF; --desact-bg: #E3E9F1; --foco: #0B2F6B;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #DDE5F0; }
+  body { font-family: Inter, "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; font-size: 16px; line-height: 1.45; color: var(--azul-osc); }
+  .telefono { max-width: 390px; min-height: 100vh; margin: 0 auto; background: var(--fondo); display: flex; flex-direction: column; position: relative; }
+  @media (min-width: 500px) { .telefono { min-height: 844px; margin: 24px auto; border-radius: 28px; overflow: hidden; box-shadow: 0 8px 30px rgba(20,43,75,.18); } }
+  .saltar { position: absolute; left: 8px; top: -60px; background: var(--azul); color: #fff; padding: 12px 16px; border-radius: 10px; z-index: 50; }
+  .saltar:focus { top: 8px; }
+  main { flex: 1; padding: 20px 20px 24px; }
+  .migas { font-size: 16px; font-weight: 700; letter-spacing: .04em; color: var(--azul); text-transform: uppercase; margin: 0 0 4px; }
+  h1 { font-size: 28px; margin: 4px 0 4px; line-height: 1.2; }
+  h1:focus { outline: none; }
+  h2 { font-size: 20px; margin: 20px 0 10px; }
+  p { margin: 6px 0; }
+  .sub { color: var(--gris); }
+  .tarjeta { background: #fff; border: 1px solid var(--borde); border-radius: 16px; padding: 16px; margin: 12px 0; }
+  .tarjeta.vacia { background: var(--azul-claro); border-color: transparent; }
+  .tarjeta.cancelada { background: var(--rojo-claro); border-color: #F1C5CB; }
+  .tarjeta.exito { background: var(--verde-claro); border-color: #BFE0CD; }
+  .fila { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .materia { font-weight: 700; color: var(--azul); text-transform: uppercase; letter-spacing: .04em; }
+  .estado { font-weight: 700; color: var(--verde); }
+  .estado.cancel { color: var(--rojo); }
+  .fecha { font-size: 18px; font-weight: 700; margin: 6px 0; }
+  button, .boton { font: inherit; font-weight: 700; min-height: 48px; min-width: 48px; border-radius: 12px; padding: 12px 16px; cursor: pointer; width: 100%; margin: 8px 0; border: 2px solid var(--azul); background: #fff; color: var(--azul); display: block; text-align: center; text-decoration: none; }
+  button.primario { background: var(--azul); color: #fff; }
+  button.peligro { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+  button.peligro-sec { color: var(--rojo); border-color: var(--rojo); }
+  button.enlace { border: none; background: none; text-align: left; padding: 12px 4px; width: auto; text-decoration: underline; text-underline-offset: 3px; }
+  button:disabled { background: var(--desact-bg); border-color: var(--desact-bg); color: var(--gris); cursor: not-allowed; }
+  .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .dos button { margin: 0; }
+  :focus-visible { outline: 3px solid var(--foco); outline-offset: 3px; }
+  button.primario:focus-visible, button.peligro:focus-visible { outline-color: var(--foco); box-shadow: 0 0 0 2px #fff inset; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  .chips button { width: auto; flex: 1 1 auto; margin: 0; }
+  .chips button[aria-pressed="true"], .chips button[aria-selected="true"] { background: var(--azul); color: #fff; }
+  .opcion { display: flex; justify-content: space-between; align-items: center; text-align: left; }
+  .opcion[aria-checked="true"] { background: var(--azul-claro); border-width: 3px; }
+  .opcion .marca { font-size: 20px; }
+  .aviso { background: var(--azul-claro); border-radius: 12px; padding: 12px 14px; margin: 12px 0; }
+  .ayuda { color: var(--gris); font-size: 16px; }
+  .exito-msg { background: var(--verde-claro); color: var(--verde); border-radius: 12px; padding: 12px 14px; font-weight: 700; margin: 12px 0; }
+  nav.barra { position: sticky; bottom: 0; background: #fff; border-top: 1px solid var(--borde); display: grid; grid-template-columns: repeat(3, 1fr); padding: 6px 8px 10px; }
+  nav.barra button { border: none; margin: 0; padding: 6px 4px; border-radius: 10px; color: var(--gris); font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 56px; }
+  nav.barra button svg { width: 24px; height: 24px; }
+  nav.barra button[aria-current="page"] { color: var(--azul); background: var(--azul-claro); }
+  nav.barra button[aria-current="page"] span { border-bottom: 3px solid var(--azul); }
+  .velo { position: fixed; inset: 0; background: rgba(20,43,75,.75); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 40; }
+  .dialogo { background: #fff; border-radius: 18px; padding: 20px; max-width: 350px; width: 100%; }
+  .dialogo h2 { margin-top: 0; font-size: 22px; }
+  .switch { display: flex; justify-content: space-between; align-items: center; }
+  .switch button { width: auto; margin: 0; }
+  .pie { color: var(--gris); margin-top: 18px; }
+  details.evaluador { margin-top: 24px; border: 1px dashed var(--borde); border-radius: 12px; padding: 4px 12px; }
+  details.evaluador summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--gris); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="telefono">
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  <main id="contenido" aria-labelledby="titulo"></main>
+  <nav class="barra" aria-label="Navegación principal"></nav>
+  <div id="estado-vivo" class="sr" role="status" aria-live="polite"></div>
+</div>
+<div id="capa-dialogo"></div>
+
+<script>
+/* TutoUTA v2 · Prototipo navegable (rol estudiante, datos ficticios, sin backend).
+   Cambios v1 → v2 según el backlog (docs/04-analisis/backlog.md):
+   Must   B2 acciones «Cambiar horario» y «Cancelar tutoría» en la tarjeta · B3 recordatorio en un solo paso, «Listo» deshabilitado sin opción
+   Should B1 «Activar recordatorio» en detalle y en «¡Tutoría reservada!», acceso de Inicio como enlace
+          B5 «Reiniciar demo» con confirmación y dentro de «Opciones del evaluador»
+          B9 teclado completo (Tab, Enter, Esc), foco visible, foco al título al cambiar de pantalla, diálogos accesibles
+   Could  B6 etiqueta «Cancelar tutoría»
+   El estado vive en memoria: recargar la página vuelve al estado inicial. */
+const HORARIOS = { M: { hora: '09:00–10:00', franja: 'Por la mañana' }, A: { hora: '16:00–17:00', franja: 'Por la tarde' } };
+const FECHA = 'Jueves, 26 de noviembre 2026', FECHA_CORTA = 'Jue, 26 nov 2026';
+const INICIAL = () => ({ pantalla: 'inicio', historial: [], reserva: null, aviso: null, materia: 'Cálculo', sel: null, nuevoSel: null, pestanaMis: 'proximas', mensaje: null });
+let S = INICIAL();
+const $main = document.querySelector('main'), $nav = document.querySelector('nav.barra'), $capa = document.getElementById('capa-dialogo'), $vivo = document.getElementById('estado-vivo');
+
+const ICONOS = {
+  inicio: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 3 2 11h3v9h5v-6h4v6h5v-9h3z"/></svg>',
+  mis: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2zm-2 8h14v10H5z"/></svg>',
+  ajustes: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7 7 0 0 0-1.7-1L15 3.3h-4l-.4 2.7a7 7 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1a7 7 0 0 0 1.7 1l.4 2.7h4l.4-2.7a7 7 0 0 0 1.7-1l2.5 1 2-3.4zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z"/></svg>'
+};
+
+const anunciar = t => { $vivo.textContent = ''; setTimeout(() => { $vivo.textContent = t; }, 50); };
+const textoAviso = () => S.aviso ? `Recordatorio: ${S.aviso} antes` : 'Recordatorios desactivados';
+const activa = () => S.reserva && S.reserva.estado === 'activa';
+
+function ir(pantalla, opts = {}) {
+  if (!opts.sinHistorial && S.pantalla !== pantalla) S.historial.push(S.pantalla);
+  if (opts.raiz) S.historial = [];
+  S.pantalla = pantalla; S.mensaje = opts.mensaje || null;
+  render(true);
+}
+function atras() { S.pantalla = S.historial.pop() || 'inicio'; S.mensaje = null; render(true); }
+
+const btnAtras = () => '<button class="enlace" data-a="atras" style="text-decoration:none">← Atrás</button>';
+const cab = (titulo, conAtras, sub) => `${conAtras ? btnAtras() : '<p class="migas">TutoUTA / Estudiante</p>'}<h1 id="titulo" tabindex="-1">${titulo}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}`;
+
+function tarjetaReserva(r, conAcciones) {
+  const h = HORARIOS[r.slot], cancel = r.estado === 'cancelada';
+  return `<div class="tarjeta ${cancel ? 'cancelada' : ''}">
+    <div class="fila"><span class="materia">Cálculo</span><span class="estado ${cancel ? 'cancel' : ''}">${cancel ? 'Cancelada' : 'Confirmada'}</span></div>
+    <p class="fecha">${FECHA} · ${h.hora}</p>
+    <p class="sub">Ana Torres · Tutoría online · ${h.franja.toLowerCase()}</p>
+    ${conAcciones && !cancel ? `<div class="dos" style="margin-top:12px">
+        <button class="primario" data-a="cambiar">Cambiar horario</button>
+        <button class="peligro-sec" data-a="pedirCancelar">Cancelar tutoría</button></div>
+      <button class="enlace" data-a="detalle">Ver detalle →</button>` : ''}
+    ${cancel ? '<button class="enlace" data-a="detalle">Ver detalle →</button>' : ''}
+  </div>`;
+}
+
+const P = {
+  inicio() {
+    let h = cab('TutoUTA', false, 'Tu próximo paso, con apoyo.') + '<h2>Próxima tutoría</h2>';
+    if (activa()) {
+      h += tarjetaReserva(S.reserva, true);
+      h += '<button disabled aria-describedby="una-reserva">Nueva tutoría</button><p id="una-reserva" class="ayuda">Una reserva a la vez en esta demo. Puedes cambiarla o cancelarla.</p>';
+    } else {
+      h += `<div class="tarjeta vacia"><p class="fecha">Tu próxima tutoría empieza aquí</p><p class="sub">Todavía no tienes una tutoría agendada. Elige el momento que mejor te venga.</p></div>
+        <button class="primario" data-a="nueva">Nueva tutoría</button>`;
+      if (S.reserva && S.reserva.estado === 'cancelada') h += '<button class="enlace" data-a="verCanceladas">Ver tutoría cancelada →</button>';
+    }
+    h += `<div class="tarjeta"><div class="fila"><span>${textoAviso()}</span></div>
+      <button class="enlace" data-a="recordatorios">${S.aviso ? 'Cambiar recordatorio →' : 'Activar recordatorio →'}</button></div>
+      <p class="pie">APE 6 · Demo con datos ficticios · v2</p>`;
+    return h;
+  },
+  buscar() {
+    const calc = S.materia === 'Cálculo';
+    let h = cab('Nueva tutoría', true) + `<div class="chips" role="tablist" aria-label="Materia">
+      ${['Cálculo', 'Física', 'Programación'].map(m => `<button role="tab" aria-selected="${S.materia === m}" data-a="materia" data-v="${m}">${m}</button>`).join('')}</div>`;
+    if (!calc) {
+      return h + `<div class="tarjeta"><p class="fecha">${S.materia}</p><p class="sub">Sin plazas en esta demo. El recorrido de prueba está limitado a Cálculo.</p></div>
+        <button class="primario" data-a="materia" data-v="Cálculo">Ver horarios de Cálculo</button>`;
+    }
+    h += `<p class="sub">${FECHA_CORTA} · Online</p><p class="sub" id="instr">Selecciona un horario disponible.</p>
+      <div class="tarjeta"><p class="fecha">Ana Torres</p><p class="sub">Cálculo · Límites y derivadas</p>
+      <div role="radiogroup" aria-labelledby="instr">
+      ${Object.entries(HORARIOS).map(([k, v]) => `<button class="opcion" role="radio" aria-checked="${S.sel === k}" data-a="sel" data-v="${k}"><span>${v.hora} · ${v.franja}</span><span class="marca" aria-hidden="true">${S.sel === k ? '✓' : ''}</span></button>`).join('')}
+      </div></div>
+      <div class="tarjeta"><p class="fecha">Diego Ruiz</p><p class="sub">10:00–17:00 · Sin plazas en esta demo</p></div>`;
+    h += S.sel ? `<p class="sub" aria-live="polite">Seleccionado: ${HORARIOS[S.sel].hora}</p><button class="primario" data-a="aConfirmar">Continuar</button>`
+               : '<button disabled>Elige un horario</button><p class="ayuda">Elige un horario para continuar.</p>';
+    return h;
+  },
+  confirmar() {
+    const v = HORARIOS[S.sel];
+    return cab('Confirma tu tutoría', true, 'Revisa la fecha y la hora antes de reservar.') +
+      `<div class="tarjeta"><span class="materia">Cálculo</span><p class="fecha">${FECHA}</p><p class="fecha">${v.hora} · ${v.franja}</p><p class="sub">Ana Torres · Tutoría online · 60 minutos</p></div>
+      <button class="primario" data-a="confirmar">Confirmar reserva</button><button data-a="atras">Elegir otro horario</button>`;
+  },
+  reservada() {
+    const v = HORARIOS[S.reserva.slot];
+    return cab('¡Tutoría reservada!', false, 'Tu plaza está confirmada.') +
+      `<div class="tarjeta exito"><span class="materia">Cálculo</span><p class="fecha">${FECHA} · ${v.hora}</p><p class="sub">Ana Torres · Tutoría online</p></div>
+      <div class="aviso"><strong>¿Quieres que te avisemos antes?</strong><p class="sub">${S.aviso ? `Ya tienes un aviso ${S.aviso} antes.` : 'Activa un recordatorio para esta tutoría.'}</p>
+      <button class="primario" data-a="recordatorios">${S.aviso ? 'Cambiar recordatorio' : 'Activar recordatorio'}</button></div>
+      <button data-a="verMis">Ver mis tutorías</button><button data-a="aInicio">Volver al Inicio</button>`;
+  },
+  mis() {
+    let h = cab('Mis tutorías') + `<div class="chips" role="tablist" aria-label="Filtro">
+      <button role="tab" aria-selected="${S.pestanaMis === 'proximas'}" data-a="pestanaMis" data-v="proximas">Próximas</button>
+      <button role="tab" aria-selected="${S.pestanaMis === 'canceladas'}" data-a="pestanaMis" data-v="canceladas">Canceladas</button></div>`;
+    if (S.pestanaMis === 'proximas') {
+      h += activa() ? tarjetaReserva(S.reserva, true) : '<div class="tarjeta vacia"><p>No tienes tutorías próximas.</p><button class="primario" data-a="nueva">Nueva tutoría</button></div>';
+    } else if (S.reserva && S.reserva.estado === 'cancelada') {
+      h += (S.mensaje ? `<div class="exito-msg" role="status">${S.mensaje}</div>` : '') +
+        `<div class="tarjeta exito"><strong>Tutoría cancelada</strong><p class="sub">Puedes recuperar tu horario con «Deshacer cancelación».</p></div>` +
+        tarjetaReserva(S.reserva, false) + '<button class="primario" data-a="deshacer">Deshacer cancelación</button>';
+    } else h += '<div class="tarjeta vacia"><p>Nada en Canceladas.</p></div>';
+    return h;
+  },
+  detalle() {
+    const r = S.reserva, v = HORARIOS[r.slot], cancel = r.estado === 'cancelada';
+    let h = cab('Tu tutoría', true) + `<div class="tarjeta"><div class="fila"><span class="materia">Cálculo</span><span class="estado ${cancel ? 'cancel' : ''}">${cancel ? 'Cancelada' : 'Confirmada'}</span></div>
+      <p class="fecha">${FECHA} · ${v.hora}</p><p class="sub">Ana Torres · Tutoría online</p><p class="sub">Duración: 60 minutos · Tema: límites y derivadas</p></div>`;
+    if (cancel) return h + '<button class="primario" data-a="deshacer">Deshacer cancelación</button>';
+    return h + `<div class="aviso"><strong>Tu plaza está reservada</strong><p class="sub">${textoAviso()}.</p></div>
+      <button class="primario" data-a="cambiar">Cambiar horario</button>
+      <button data-a="recordatorios">${S.aviso ? 'Cambiar recordatorio' : 'Activar recordatorio'}</button>
+      <button class="peligro" data-a="pedirCancelar">Cancelar tutoría</button>`;
+  },
+  cambiar() {
+    const actual = S.reserva.slot, otros = Object.keys(HORARIOS).filter(k => k !== actual);
+    let h = cab('Cambiar horario', true, 'Elige un nuevo horario para el mismo día.') +
+      `<div class="aviso"><strong>Tu horario actual</strong><p>${FECHA_CORTA} · ${HORARIOS[actual].hora}</p></div><p class="sub" id="instr2">Horarios disponibles:</p>
+      <div role="radiogroup" aria-labelledby="instr2">${otros.map(k => `<button class="opcion" role="radio" aria-checked="${S.nuevoSel === k}" data-a="nuevoSel" data-v="${k}"><span>${HORARIOS[k].hora} · ${HORARIOS[k].franja}</span><span class="marca" aria-hidden="true">${S.nuevoSel === k ? '✓' : ''}</span></button>`).join('')}</div>
+      <div class="tarjeta"><p class="sub">11:00–12:00 · Sin plazas</p></div><p class="ayuda">Tu reserva no cambia hasta que guardes.</p>`;
+    return h + (S.nuevoSel ? '<button class="primario" data-a="guardarHorario">Guardar nuevo horario</button>' : '<button disabled>Elige un nuevo horario</button>');
+  },
+  actualizado() {
+    const v = HORARIOS[S.reserva.slot];
+    return cab('¡Horario actualizado!', false, 'Tu tutoría quedó en el nuevo horario.') +
+      `<div class="tarjeta exito"><span class="materia">Cálculo</span><p class="fecha">${FECHA} · ${v.hora}</p><p class="sub">${v.franja} · Ana Torres</p></div>
+      <button class="primario" data-a="verMis">Ver mis tutorías</button><button data-a="aInicio">Volver al Inicio</button>`;
+  },
+  ajustes() {
+    return cab('Ajustes') + `<div class="tarjeta"><p class="fecha">Alex Martínez</p><p class="sub">Estudiante UTA · Cuenta de prueba</p></div>
+      <div class="tarjeta"><button class="enlace" data-a="recordatorios" style="font-size:18px">Recordatorios →</button><p class="sub">${S.aviso ? `Activados · ${S.aviso} antes` : 'Desactivados'}</p></div>
+      <p class="ayuda">Solo rol estudiante. Una reserva de Cálculo a la vez. Sin envíos ni datos reales.</p>
+      <details class="evaluador"><summary>Opciones del evaluador</summary>
+        <p class="ayuda">Para el equipo que aplica la prueba, no para el participante.</p>
+        <button data-a="pedirReinicio">Reiniciar demo</button></details>`;
+  },
+  recordatorios() {
+    const ops = ['15 min', '1 h', '1 día'];
+    let h = cab('Recordatorios', true, 'Elige cuándo quieres que te avisemos. Al elegir una opción, el recordatorio queda activado.') +
+      `<div class="tarjeta switch"><div><strong>Recordatorios</strong><p class="sub" style="margin:0">${S.aviso ? `Activados · ${S.aviso} antes` : 'Desactivados'}</p></div>
+      ${S.aviso ? '<button class="peligro-sec" data-a="apagarAviso">Desactivar</button>' : ''}</div>
+      <h2 id="antic">Avisarme antes de la tutoría</h2>
+      <div role="radiogroup" aria-labelledby="antic">${ops.map(o => `<button class="opcion" role="radio" aria-checked="${S.aviso === o}" data-a="aviso" data-v="${o}"><span>${o} antes</span><span class="marca" aria-hidden="true">${S.aviso === o ? '✓' : ''}</span></button>`).join('')}</div>`;
+    if (S.aviso) h += `<div class="exito-msg" role="status">Recordatorio activado · Aviso ${S.aviso} antes. Preferencia guardada.</div>`;
+    return h + (S.aviso ? '<button class="primario" data-a="listo">Listo</button>' : '<button disabled>Listo</button><p class="ayuda">Elige una opción para activar el recordatorio.</p>');
+  }
+};
+
+function renderNav() {
+  const actual = { inicio: 'inicio', buscar: 'inicio', confirmar: 'inicio', reservada: 'inicio', actualizado: 'mis', mis: 'mis', detalle: 'mis', cambiar: 'mis', ajustes: 'ajustes', recordatorios: 'ajustes' }[S.pantalla];
+  $nav.innerHTML = [['inicio', 'Inicio'], ['mis', 'Mis tutorías'], ['ajustes', 'Ajustes']].map(([k, t]) =>
+    `<button data-a="tab" data-v="${k}" ${actual === k ? 'aria-current="page"' : ''}>${ICONOS[k]}<span>${t}</span></button>`).join('');
+}
+function render(moverFoco) {
+  $main.innerHTML = P[S.pantalla]();
+  renderNav();
+  document.title = `${$main.querySelector('h1').textContent} · TutoUTA v2`;
+  if (moverFoco) $main.querySelector('h1').focus();
+}
+
+/* ---------- Diálogos accesibles: role=dialog, foco atrapado, Esc cierra, foco vuelve ---------- */
+let volverFoco = null;
+function abrirDialogo(titulo, cuerpo, botones) {
+  volverFoco = document.activeElement;
+  $capa.innerHTML = `<div class="velo" data-a="cerrarFondo"><div class="dialogo" role="dialog" aria-modal="true" aria-labelledby="dlg-t" aria-describedby="dlg-d">
+    <h2 id="dlg-t">${titulo}</h2><div id="dlg-d">${cuerpo}</div>${botones}</div></div>`;
+  document.querySelector('.telefono').setAttribute('inert', '');
+  $capa.querySelector('.dialogo button').focus();
+}
+function cerrarDialogo() {
+  $capa.innerHTML = ''; document.querySelector('.telefono').removeAttribute('inert');
+  if (volverFoco && document.body.contains(volverFoco)) volverFoco.focus();
+}
+document.addEventListener('keydown', e => {
+  if (!$capa.innerHTML) return;
+  if (e.key === 'Escape') { e.preventDefault(); cerrarDialogo(); }
+  if (e.key === 'Tab') {
+    const f = [...$capa.querySelectorAll('button')]; const i = f.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+  }
+});
+
+/* ---------- Acciones ---------- */
+const A = {
+  atras, tab: v => ir(v === 'mis' ? 'mis' : v, { raiz: true }),
+  nueva: () => { S.sel = null; S.materia = 'Cálculo'; ir('buscar'); },
+  materia: v => { S.materia = v; S.sel = null; render(false); $main.querySelector(`[data-v="${v}"][role="tab"]`)?.focus(); },
+  sel: v => { S.sel = v; render(false); $main.querySelector(`[data-a="sel"][data-v="${v}"]`).focus(); anunciar(`Seleccionado: ${HORARIOS[v].hora}`); },
+  aConfirmar: () => ir('confirmar'),
+  confirmar: () => { S.reserva = { slot: S.sel, estado: 'activa' }; S.historial = []; ir('reservada', { sinHistorial: true }); anunciar('Tutoría reservada'); },
+  verMis: () => { S.pestanaMis = 'proximas'; ir('mis', { raiz: true }); },
+  aInicio: () => ir('inicio', { raiz: true }),
+  pestanaMis: v => { S.pestanaMis = v; render(false); $main.querySelector(`[data-a="pestanaMis"][data-v="${v}"]`).focus(); },
+  verCanceladas: () => { S.pestanaMis = 'canceladas'; ir('mis', { raiz: true }); },
+  detalle: () => ir('detalle'),
+  cambiar: () => { S.nuevoSel = null; ir('cambiar'); },
+  nuevoSel: v => { S.nuevoSel = v; render(false); $main.querySelector(`[data-a="nuevoSel"][data-v="${v}"]`).focus(); anunciar(`Nuevo horario seleccionado: ${HORARIOS[v].hora}`); },
+  guardarHorario: () => { S.reserva.slot = S.nuevoSel; S.historial = []; ir('actualizado', { sinHistorial: true }); anunciar('Horario actualizado'); },
+  pedirCancelar: () => {
+    const v = HORARIOS[S.reserva.slot];
+    abrirDialogo('¿Cancelar esta tutoría?', `<p><strong>Cálculo · Ana Torres</strong></p><p>${FECHA_CORTA} · ${v.hora}</p><p class="sub">Liberarás tu plaza. La tutoría pasará a Canceladas y podrás deshacerlo.</p>`,
+      '<button class="peligro" data-a="siCancelar">Sí, cancelar</button><button data-a="cerrar">Volver</button>');
+  },
+  siCancelar: () => { cerrarDialogo(); S.reserva.estado = 'cancelada'; S.pestanaMis = 'canceladas'; ir('mis', { raiz: true, mensaje: 'Tu tutoría se canceló. Puedes deshacerlo.' }); anunciar('Tutoría cancelada'); },
+  deshacer: () => { S.reserva.estado = 'activa'; S.pestanaMis = 'proximas'; ir('mis', { raiz: true }); anunciar('Cancelación deshecha. Tu tutoría está confirmada.'); },
+  cerrar: cerrarDialogo, cerrarFondo: (v, e) => { if (e.target.classList.contains('velo')) cerrarDialogo(); },
+  recordatorios: () => ir('recordatorios'),
+  aviso: v => { S.aviso = v; render(false); $main.querySelector(`[data-a="aviso"][data-v="${v}"]`).focus(); anunciar(`Recordatorio activado, ${v} antes`); },
+  apagarAviso: () => { S.aviso = null; render(false); $main.querySelector('h1').focus(); anunciar('Recordatorios desactivados'); },
+  listo: () => atras(),
+  pedirReinicio: () => abrirDialogo('¿Reiniciar la demo?', '<p class="sub">Se borrará la reserva y se desactivarán los recordatorios.</p>',
+    '<button class="peligro" data-a="siReiniciar">Reiniciar</button><button data-a="cerrar">Volver</button>'),
+  siReiniciar: () => { cerrarDialogo(); S = INICIAL(); render(true); anunciar('Demo reiniciada'); }
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if (!b || b.disabled) return;
+  const fn = A[b.dataset.a]; if (fn) fn(b.dataset.v, e);
+});
+render(false);
+</script>
+</body>
+</html>
